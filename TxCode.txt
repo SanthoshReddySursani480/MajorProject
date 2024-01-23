@@ -1,0 +1,248 @@
+//Code for TX: 
+
+
+#include <LiquidCrystal.h> 
+#include <SoftwareSerial.h> 
+#include <TinyGPS++.h> 
+// initialize the library with the numbers of the interface pins 
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2); 
+SoftwareSerial GPS_SoftSerial(8, 9); 
+TinyGPSPlus gps; 
+SoftwareSerial mySerial(10, 11); 
+#define Temp A0 
+#define Acc A1 const 
+int flame = 12; 
+#define d0 A2 
+#define d1 A3 #define d2 A4 int 
+sensor1Value = 0; int 
+sensor2Value = 0; int 
+buttonState = 0; volatile float 
+minutes, seconds; volatile int 
+degree, secs, mins; 
+void setup() { 
+Serial.begin(9600); 
+GPS_SoftSerial.begin(9600); 
+lcd.begin(16, 2); 
+ lcd.clear(); lcd.setCursor(0, 0); lcd.print("Welcome"); 
+pinMode(flame, INPUT_PULLUP); pinMode(d0, OUTPUT); 
+pinMode(d1, OUTPUT); pinMode(d2, OUTPUT); 
+lcd.clear(); 
+ lcd.print("Waiting For GPS"); 
+lcd.setCursor(0, 1); 
+lcd.print(" Signal "); 
+delay(2000); lcd.clear(); 
+lcd.print("GPS is Ready"); 
+delay(1000); lcd.clear(); 
+lcd.print("System Ready"); 
+mySerial.begin(9600); 
+mySerial.println("AT"); 
+delay(1500); 
+ mySerial.println("AT+CREG?"); 
+delay(1500); 
+ mySerial.println("AT+CMGF=1"); 
+delay(1500); 
+ mySerial.println("AT+CNMI=1,2,0,0"); 
+delay(1500); 
+} 
+unsigned long int duration = 0;
+
+
+void loop(){
+
+                                     sensor1Value = analogRead(Temp)/3; 
+                                     sensor2Value = analogRead(Acc); 
+                                     smartDelay(1000); /* Generate precise delay of 1ms */ 
+                                      unsigned long start; 
+                      double lat_val, lng_val, alt_m_val; 
+                  uint8_t hr_val, min_val, sec_val; bool 
+                       loc_valid, alt_valid, time_valid; 
+                    lat_val = gps.location.lat();                         /* Get latitude data */ 
+                   loc_valid = gps.location.isValid();                        /* Check if valid location data is   available */ 
+                                                                                              
+                     lng_val = gps.location.lng();                          /* Get longtitude data */ 
+                  alt_m_val = gps.altitude.meters();                       /* Get altitude data in meters */ 
+                  alt_valid = gps.altitude.isValid();                        /* Check if valid altitude data is 
+                                                                            available */ 
+ hr_val = gps.time.hour(); /* Get hour */ 
+min_val = gps.time.minute(); /* Get minutes */ 
+sec_val = gps.time.second(); /* Get seconds */ 
+ time_valid = gps.time.isValid(); /* Check if valid time data is available 
+*/ 
+ if (!loc_valid) 
+ { 
+ // Serial.print("Latitude : "); 
+ // Serial.print("***"); 
+ // Serial.print("Longitude : "); 
+ // Serial.print("***"); 
+ } 
+else 
+ { 
+ DegMinSec(lat_val); 
+ // Serial.println("Latitude in Decimal Degrees : "); 
+ // Serial.println(lat_val, 6); 
+ // Serial.println("Latitude in Degrees Minutes Seconds : "); 
+ // Serial.println(degree); 
+ // Serial.println("\t"); 
+ // Serial.println(mins); 
+ // Serial.println("\t"); 
+ // Serial.println(secs); 
+ DegMinSec(lng_val); /* Convert the decimal degree value into degrees 
+minutes seconds form */ 
+ // Serial.println("Longitude in Decimal Degrees : "); 
+ // Serial.println(lng_val, 6); 
+ // Serial.println("Longitude in Degrees Minutes Seconds : "); 
+ // Serial.println(degree); 
+ // Serial.println("\t"); 
+ // Serial.println(mins); 
+ // Serial.println("\t"); 
+// Serial.println(secs); 
+lcd.clear(); lcd.setCursor(0, 
+0); 
+
+lcd.print("Latitude : ");
+
+
+ lcd.print(lat_val, 6); 
+delay(1000); lcd.clear(); 
+lcd.setCursor(0, 1); 
+lcd.print("Latitude : "); 
+lcd.print(degree); 
+ } 
+ if (!alt_valid) 
+ { 
+ // Serial.print("Altitude : "); 
+ // Serial.print("***"); 
+ } 
+else 
+ { 
+ // Serial.print("Altitude : "); 
+ // Serial.print(alt_m_val, 6); 
+ } 
+ if (!time_valid) 
+ { 
+ // Serial.print("Time : "); 
+ // Serial.println("***"); 
+ } 
+else { 
+ char time_string[32]; 
+ sprintf(time_string, "Time : %02d/%02d/%02d \n", hr_val, min_val, 
+sec_val); 
+ // Serial.print(time_string); 
+ } lcd.clear(); 
+lcd.setCursor(0, 0); 
+lcd.print("TEMP = " ); 
+lcd.print(sensor1Value); 
+delay(1000); if 
+(sensor1Value > 48) 
+ { digitalWrite(d0, LOW); 
+lcd.setCursor(0, 1); 
+lcd.print("TEMP is High"); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("Tempature is High"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("\r\nLatitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println(lat_val); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500);
+
+
+
+ mySerial.println("\r\nlongitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); mySerial.println(lng_val); 
+mySerial.println((char)26); delay(1500); 
+digitalWrite(d0, HIGH); 
+ } 
+ lcd.clear(); lcd.setCursor(0, 0); 
+lcd.print("MQ2 = " ); 
+lcd.print(sensor2Value); 
+delay(1000); if (sensor2Value > 
+370) 
+ { digitalWrite(d1, LOW); 
+lcd.setCursor(0, 1); 
+lcd.print("Gas is Leaked"); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("Gas is Leaked"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("\r\nLatitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); mySerial.println(lat_val); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("\r\nlongitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); mySerial.println(lng_val); 
+mySerial.println((char)26); delay(1500); 
+digitalWrite(d1, HIGH); 
+ } 
+ buttonState = digitalRead(flame); 
+if (buttonState == HIGH) 
+{ digitalWrite(d2, LOW); 
+lcd.setCursor(0, 1); 
+lcd.print("FIRE OCCURED"); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("FIRE OCCURED"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("\r\nLatitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500);
+[16:53, 1/23/2024] Sursani Santhosh: mySerial.println(lat_val); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println("\r\nlongitude:"); 
+mySerial.println((char)26); delay(1500); 
+ mySerial.println("AT+CMGS=\"+91XXXXXXXX\"\r\n"); 
+delay(1500); 
+ mySerial.println(lng_val); 
+mySerial.println((char)26); delay(1500); 
+ digitalWrite(d2, HIGH); 
+   } 
+ } 
+
+
+
+static void smartDelay(unsigned long ms) 
+{ 
+ unsigned long start = millis(); 
+do { 
+ while (GPS_SoftSerial.available()) /* Encode data read from GPS while 
+data is available on serial port */ 
+gps.encode(GPS_SoftSerial.read()); 
+ /* Encode basically is used to parse the string received by the GPS and 
+to store it in a buffer so that information can be extracted from it */ } 
+while (millis() - start < ms); 
+} 
+void DegMinSec( double tot_val) /* Convert data in decimal degrees into 
+degrees minutes seconds form */ 
+{ degree = (int)tot_val; 
+minutes = tot_val - degree; 
+seconds = 60 * minutes; 
+minutes = (int)seconds; mins 
+= (int)minutes; 
+ seconds = seconds - minutes; 
+seconds = 60 * seconds; secs 
+= (int)seconds; 
+}
+
+
+
+

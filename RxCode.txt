@@ -1,0 +1,45 @@
+//code for Rx
+
+#include <LiquidCrystal.h> 
+#include <SoftwareSerial.h> 
+// initialize the library with the numbers of the interface pins 
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2); 
+#define d0 8 
+#define d1 9 
+#define d2 10 
+#define Buz 13
+
+void setup() { 
+Serial.begin(9600); pinMode(d0, 
+INPUT); pinMode(d1, INPUT); 
+pinMode(d2, INPUT); 
+pinMode(Buz, OUTPUT); 
+} 
+void loop() { 
+ lcd.clear(); 
+lcd.setCursor(0, 0); 
+lcd.print("NORMAL STATE" ); 
+ delay(2000); 
+if (d0 == LOW) 
+ { digitalWrite(Buz, HIGH); 
+Serial.println("Flame active"); 
+lcd.setCursor(0, 1); 
+lcd.print("TEMP is High"); 
+delay(1000); 
+ digitalWrite(Buz, LOW); 
+ } 
+ if (d1 == LOW) 
+ { digitalWrite(Buz, HIGH); 
+Serial.println("Flame active"); 
+lcd.setCursor(0, 1); 
+lcd.print("Flame active"); 
+delay(1000); digitalWrite(Buz, 
+LOW); 
+} if (d2 == LOW) { 
+digitalWrite(Buz, HIGH); 
+Serial.println("Flame active"); 
+lcd.setCursor(0, 1); 
+lcd.print("Gas is leaked"); 
+delay(1000); digitalWrite(Buz, 
+LOW); 
+ } }
